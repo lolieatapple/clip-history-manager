@@ -155,6 +155,7 @@ ipcMain.handle('clear-history', () => {
   log.debug('IPC: clear-history called');
   clipboardHistory = [];
   lastClipboardContent = null;
+  clipboard.clear(); // 清空系统剪贴板
   return { success: true, memoryUsage: 0 };
 });
 

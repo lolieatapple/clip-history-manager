@@ -84,7 +84,7 @@ function showToast(message, type = 'info', duration = 3000) {
 // Modal Functions
 function showModal(message, onConfirm) {
     elements.confirmMessage.textContent = message;
-    elements.confirmModal.style.display = 'block';
+    elements.confirmModal.classList.add('show');
     
     const confirmHandler = () => {
         onConfirm();
@@ -107,7 +107,7 @@ function showModal(message, onConfirm) {
 }
 
 function hideModal() {
-    elements.confirmModal.style.display = 'none';
+    elements.confirmModal.classList.remove('show');
     elements.confirmOk.onclick = null;
     elements.confirmCancel.onclick = null;
     elements.confirmModal.onclick = null;
