@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clipboard History Manager</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="app-title">
+                <i class="fas fa-clipboard-list"></i>
+                Clipboard History
+            </h1>
+            <div class="memory-usage">
+                <i class="fas fa-memory"></i>
+                <span id="memoryUsage">0 KB</span>
+            </div>
+        </header>
+
+        <!-- Current Clipboard Section -->
+        <section class="current-clipboard">
+            <div class="section-header">
+                <h2>Current Clipboard</h2>
+                <button id="clearCurrentBtn" class="btn btn-danger" title="Clear Current Clipboard">
+                    <i class="fas fa-trash"></i>
+                    Clear
+                </button>
+            </div>
+            <div class="current-content" id="currentContent">
+                <div class="empty-state">
+                    <i class="fas fa-clipboard"></i>
+                    <p>Clipboard is empty</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search and Controls -->
+        <section class="controls">
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search clipboard history..." />
+                <button id="clearSearchBtn" class="clear-search" title="Clear search">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="control-buttons">
+                <button id="refreshBtn" class="btn btn-secondary" title="Refresh">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button id="clearAllBtn" class="btn btn-danger" title="Clear All History">
+                    <i class="fas fa-broom"></i>
+                    Clear All
+                </button>
+            </div>
+        </section>
+
+        <!-- History Section -->
+        <section class="history-section">
+            <div class="section-header">
+                <h2>History</h2>
+                <span id="historyCount" class="count-badge">0 items</span>
+            </div>
+            
+            <div class="history-container">
+                <div id="historyList" class="history-list">
+                    <div class="empty-state">
+                        <i class="fas fa-history"></i>
+                        <h3>No history yet</h3>
+                        <p>Copy something to get started!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Confirmation Modal -->
+        <div id="confirmModal" class="modal">
+            <div class="modal-content">
+                <h3>Confirm Action</h3>
+                <p id="confirmMessage">Are you sure you want to proceed?</p>
+                <div class="modal-actions">
+                    <button id="confirmCancel" class="btn btn-secondary">Cancel</button>
+                    <button id="confirmOk" class="btn btn-danger">Confirm</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toastContainer" class="toast-container"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
