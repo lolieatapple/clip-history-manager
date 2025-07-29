@@ -17,6 +17,8 @@ body {
     min-height: 100vh;
     background: rgba(255, 255, 255, 0.95);
     padding: 20px;
+    -webkit-app-region: drag;
+    cursor: move;
 }
 
 /* Header */
@@ -27,8 +29,9 @@ body {
     padding: 20px 0;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     margin-bottom: 30px;
-    -webkit-app-region: drag;
     cursor: move;
+    position: relative;
+    z-index: 100;
 }
 
 .header button,
@@ -37,8 +40,15 @@ body {
     cursor: pointer;
 }
 
+section,
+.search-container,
+.control-buttons,
+.current-content,
+.history-list {
+    -webkit-app-region: no-drag;
+}
+
 .app-title {
-    -webkit-app-region: drag;
     cursor: move;
 }
 

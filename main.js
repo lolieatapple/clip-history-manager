@@ -27,7 +27,8 @@ function createWindow() {
       preload: path.join(__dirname, 'renderer', 'preload.js')
     },
     titleBarStyle: 'hiddenInset',
-    show: false
+    show: false,
+    frame: false
   });
 
   mainWindow.loadFile('renderer/index.html');
@@ -72,6 +73,15 @@ function startClipboardMonitoring() {
       if (newContent) {
         log.debug(`New clipboard content detected, type: ${contentType}, length: ${newContent.length}`);
         addToHistory(newContent, contentType);
+      } else if (!newContent && lastClipboardContent === null) {
+        // Always send update even when clipboard is empty to ensure UI sync
+        if (mainWindow && mainWindow.webContents) {
+          mainWindow.webContents.send('clipboard-updated', {
+            history: clipboardHistory,
+            currentContent: null,
+            memoryUsage: getMemoryUsage()
+          });
+        }
       }
     } catch (error) {
       log.error('Error monitoring clipboard:', error);

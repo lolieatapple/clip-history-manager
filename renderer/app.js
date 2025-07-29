@@ -377,6 +377,7 @@ document.addEventListener('keydown', (e) => {
 window.electronAPI.onClipboardUpdate((event, data) => {
     clipboardHistory = data.history;
     currentContent = data.currentContent;
+    currentContentType = data.currentContent ? (data.currentContent.startsWith('data:image') ? 'image' : 'text') : null;
     memoryUsage = data.memoryUsage;
     
     renderCurrentContent();
