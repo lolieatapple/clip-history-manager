@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, clipboard, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, clipboard, nativeImage, globalShortcut } = require('electron');
 const path = require('path');
 const log = require('electron-log');
 
@@ -175,10 +175,44 @@ ipcMain.handle('get-memory-usage', () => {
   return getMemoryUsage();
 });
 
+// Toggle window visibility function
+function toggleWindow() {
+  if (!mainWindow) {
+    log.info('Creating new window for toggle');
+    createWindow();
+    return;
+  }
+
+  if (mainWindow.isVisible()) {
+    log.info('Hiding window via hotkey');
+    mainWindow.hide();
+  } else {
+    log.info('Showing window via hotkey');
+    mainWindow.show();
+    mainWindow.focus();
+  }
+}
+
+// Register global hotkey
+function registerGlobalHotkey() {
+  const hotkey = 'Command+Shift+V';
+  const success = globalShortcut.register(hotkey, () => {
+    log.info(`Global hotkey ${hotkey} pressed`);
+    toggleWindow();
+  });
+  
+  if (success) {
+    log.info(`Global hotkey ${hotkey} registered successfully`);
+  } else {
+    log.error(`Failed to register global hotkey ${hotkey}`);
+  }
+}
+
 // App event handlers
 app.whenReady().then(() => {
   log.info('App is ready');
   createWindow();
+  registerGlobalHotkey();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -197,6 +231,8 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => {
   log.info('App is quitting...');
   stopClipboardMonitoring();
+  globalShortcut.unregisterAll();
+  log.info('Global shortcuts unregistered');
 });
 
 // Handle security
