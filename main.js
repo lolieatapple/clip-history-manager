@@ -193,15 +193,13 @@ function toggleWindow() {
     return;
   }
 
-  if (mainWindow.isVisible()) {
-    if (mainWindow.isAlwaysOnTop()) {
-      log.info('Window is already on top, hiding window via hotkey');
-      mainWindow.hide();
-    } else {
-      log.info('Setting window always on top via hotkey');
-      mainWindow.setAlwaysOnTop(true);
-      mainWindow.focus();
-    }
+  if (mainWindow.isVisible() && mainWindow.isFocused()) {
+    log.info('Window is already focused, hiding window via hotkey');
+    mainWindow.hide();
+  } else if (mainWindow.isVisible()) {
+    log.info('Window is visible but not focused, setting window always on top via hotkey');
+    mainWindow.setAlwaysOnTop(true);
+    mainWindow.focus();
   } else {
     log.info('Showing window via hotkey');
     mainWindow.show();
