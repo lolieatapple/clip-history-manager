@@ -17,8 +17,7 @@ body {
     min-height: 100vh;
     background: rgba(255, 255, 255, 0.95);
     padding: 20px;
-    -webkit-app-region: drag;
-    cursor: move;
+    overflow-y: auto;
 }
 
 /* Header */
@@ -32,6 +31,14 @@ body {
     cursor: move;
     position: relative;
     z-index: 100;
+    -webkit-app-region: drag;
+}
+
+.header,
+.header button,
+.header .memory-usage {
+    -webkit-app-region: drag;
+    cursor: move;
 }
 
 .header button,
@@ -50,6 +57,7 @@ section,
 
 .app-title {
     cursor: move;
+    -webkit-app-region: drag;
 }
 
 .app-title {
@@ -364,8 +372,11 @@ section {
     max-height: 2.8em;
     overflow: hidden;
     display: -webkit-box;
+    display: box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
+    box-orient: vertical;
 }
 
 .item-image {

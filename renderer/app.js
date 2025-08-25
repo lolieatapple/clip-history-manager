@@ -385,9 +385,66 @@ window.electronAPI.onClipboardUpdate((event, data) => {
     updateStats();
 });
 
+// Window drag and scroll handling
+function setupWindowDragAndScroll() {
+    const header = document.querySelector('.header');
+    const appContainer = document.querySelector('.app-container');
+    
+    let isDragging = false;
+    let startX, startY, startLeft, startTop;
+    
+    // Handle mouse events for window dragging
+    header.addEventListener('mousedown', (e) => {
+        // Only start dragging on left mouse button
+        if (e.button !== 0) return;
+        
+        // Don't drag if clicking on buttons or interactive elements
+        if (e.target.closest('button, input, .memory-usage')) {
+            return;
+        }
+        
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        
+        // Get current window position
+        window.electronAPI.getWindowPosition().then(pos => {
+            startLeft = pos.x;
+            startTop = pos.y;
+        });
+        
+        e.preventDefault();
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+        
+        window.electronAPI.moveWindow(startLeft + deltaX, startTop + deltaY);
+    });
+    
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+    
+    // Prevent text selection during drag
+    header.addEventListener('selectstart', (e) => {
+        if (isDragging) {
+            e.preventDefault();
+        }
+    });
+    
+    // Ensure scrolling works properly
+    appContainer.style.overflowY = 'auto';
+    appContainer.style.maxHeight = '100vh';
+}
+
 // Initialize application
 document.addEventListener('DOMContentLoaded', () => {
     loadClipboardHistory();
+    setupWindowDragAndScroll();
     
     // Focus search on load
     elements.searchInput.focus();

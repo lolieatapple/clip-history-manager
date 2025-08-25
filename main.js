@@ -18,7 +18,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 700,
-    minWidth: 800,
+    minWidth: 200,
     minHeight: 600,
     webPreferences: {
       nodeIntegration: false,
@@ -185,6 +185,17 @@ ipcMain.handle('get-memory-usage', () => {
   return getMemoryUsage();
 });
 
+ipcMain.handle('get-window-position', () => {
+  if (!mainWindow) return { x: 0, y: 0 };
+  const pos = mainWindow.getPosition();
+  return { x: pos[0], y: pos[1] };
+});
+
+ipcMain.handle('move-window', (event, x, y) => {
+  if (!mainWindow) return;
+  mainWindow.setPosition(Math.round(x), Math.round(y));
+});
+
 // Toggle window visibility function
 function toggleWindow() {
   if (!mainWindow) {
@@ -223,6 +234,24 @@ function registerGlobalHotkey() {
   }
 }
 
+// Show window function
+function showWindow() {
+  if (!mainWindow) {
+    log.info('Creating new window for show');
+    createWindow();
+    return;
+  }
+  
+  if (!mainWindow.isVisible()) {
+    log.info('Showing window via dock/app icon');
+    mainWindow.show();
+    mainWindow.focus();
+  } else if (!mainWindow.isFocused()) {
+    log.info('Focusing existing window');
+    mainWindow.focus();
+  }
+}
+
 // App event handlers
 app.whenReady().then(() => {
   log.info('App is ready');
@@ -230,9 +259,8 @@ app.whenReady().then(() => {
   registerGlobalHotkey();
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
+    log.info('App activated (dock icon clicked)');
+    showWindow();
   });
 });
 
