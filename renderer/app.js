@@ -160,11 +160,9 @@ function renderHistoryList() {
         return;
     }
 
-    elements.historyList.innerHTML = filteredHistory.map(item => `
+    elements.historyList.innerHTML = filteredHistory.map((item, index) => `
         <div class="history-item" data-id="${item.id}" onclick="handleHistoryItemClick('${item.id}')">
-            <div class="item-icon ${item.type}">
-                <i class="fas fa-${item.type === 'text' ? 'file-alt' : 'image'}"></i>
-            </div>
+            <div class="item-index-badge">${index + 1}</div>
             <div class="item-content">
                 ${item.type === 'text' ? `
                     <div class="item-preview item-text">${escapeHtml(truncateText(item.content, 150))}</div>

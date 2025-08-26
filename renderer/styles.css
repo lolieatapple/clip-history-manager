@@ -316,6 +316,23 @@ section {
     position: relative;
 }
 
+/* Small numeric badge replacing the left icon */
+.item-index-badge {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin-right: 12px;
+    border-radius: 4px;
+    background: rgba(45, 55, 72, 0.08);
+    color: #4a5568;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+}
+
 .history-item:hover {
     background: #f7fafc;
     transform: translateX(4px);
