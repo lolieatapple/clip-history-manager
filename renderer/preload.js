@@ -12,5 +12,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onClipboardUpdate: (callback) => ipcRenderer.on('clipboard-updated', callback),
   removeAllListeners: () => ipcRenderer.removeAllListeners('clipboard-updated'),
   getWindowPosition: () => ipcRenderer.invoke('get-window-position'),
-  moveWindow: (x, y) => ipcRenderer.invoke('move-window', x, y)
+  moveWindow: (x, y) => ipcRenderer.invoke('move-window', x, y),
+  hideWindow: () => ipcRenderer.invoke('hide-window'),
+  togglePinItem: (itemId) => ipcRenderer.invoke('toggle-pin-item', itemId)
 });

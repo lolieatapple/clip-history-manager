@@ -1,21 +1,67 @@
-const { app, BrowserWindow, ipcMain, clipboard, nativeImage, globalShortcut } = require('electron');
+const { app, BrowserWindow, ipcMain, clipboard, nativeImage, globalShortcut, screen } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const log = require('electron-log');
 
 // Configure logging
 log.transports.file.level = 'info';
 log.transports.console.level = 'debug';
 
+// Memory limit: 500MB
+const MAX_MEMORY_BYTES = 500 * 1024 * 1024;
+
 let mainWindow;
 let clipboardHistory = [];
 let lastClipboardContent = null;
 let clipboardMonitor;
 
+// Window position persistence
+function getWindowBoundsPath() {
+  return path.join(app.getPath('userData'), 'window-bounds.json');
+}
+
+function saveWindowBounds() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  try {
+    const bounds = mainWindow.getBounds();
+    fs.writeFileSync(getWindowBoundsPath(), JSON.stringify(bounds));
+  } catch (error) {
+    log.error('Error saving window bounds:', error);
+  }
+}
+
+function loadWindowBounds() {
+  try {
+    const data = fs.readFileSync(getWindowBoundsPath(), 'utf-8');
+    const bounds = JSON.parse(data);
+    // Validate that the saved position is within a visible display
+    const displays = screen.getAllDisplays();
+    const isVisible = displays.some(display => {
+      const { x, y, width, height } = display.bounds;
+      return bounds.x >= x - 100 && bounds.x < x + width &&
+             bounds.y >= y - 100 && bounds.y < y + height;
+    });
+    if (isVisible) return bounds;
+    log.info('Saved window position is off-screen, using default');
+  } catch (error) {
+    // No saved bounds or invalid file
+  }
+  return null;
+}
+
+// Debounce helper for saving window position
+let saveTimeout;
+function debouncedSaveWindowBounds() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(saveWindowBounds, 500);
+}
+
 // Security: Enable context isolation and disable node integration for renderer
 function createWindow() {
   log.info('Creating main window...');
-  
-  mainWindow = new BrowserWindow({
+
+  const savedBounds = loadWindowBounds();
+  const windowOptions = {
     width: 1000,
     height: 700,
     minWidth: 200,
@@ -29,7 +75,16 @@ function createWindow() {
     titleBarStyle: 'hiddenInset',
     show: false,
     frame: false
-  });
+  };
+
+  if (savedBounds) {
+    windowOptions.x = savedBounds.x;
+    windowOptions.y = savedBounds.y;
+    windowOptions.width = savedBounds.width;
+    windowOptions.height = savedBounds.height;
+  }
+
+  mainWindow = new BrowserWindow(windowOptions);
 
   mainWindow.loadFile('renderer/index.html');
 
@@ -37,6 +92,19 @@ function createWindow() {
     log.info('Main window ready to show');
     mainWindow.show();
     startClipboardMonitoring();
+  });
+
+  // Save window position on move/resize
+  mainWindow.on('moved', debouncedSaveWindowBounds);
+  mainWindow.on('resized', debouncedSaveWindowBounds);
+
+  // Intercept close button: hide window instead of destroying it
+  mainWindow.on('close', (e) => {
+    if (!app.isQuitting) {
+      e.preventDefault();
+      log.info('Window close intercepted, hiding instead');
+      mainWindow.hide();
+    }
   });
 
   mainWindow.on('closed', () => {
@@ -48,37 +116,44 @@ function createWindow() {
 
 function startClipboardMonitoring() {
   log.info('Starting clipboard monitoring...');
-  
+
   clipboardMonitor = setInterval(() => {
     try {
       const currentText = clipboard.readText();
       const currentImage = clipboard.readImage();
-      
+
       let newContent = null;
       let contentType = null;
-      
+
       if (currentText && currentText !== lastClipboardContent) {
         newContent = currentText;
         contentType = 'text';
         lastClipboardContent = currentText;
       } else if (!currentText && !currentImage.isEmpty()) {
-        const imageData = currentImage.toDataURL();
-        if (imageData !== lastClipboardContent) {
-          newContent = imageData;
-          contentType = 'image';
-          lastClipboardContent = imageData;
+        try {
+          const imageData = currentImage.toDataURL();
+          if (imageData && imageData !== lastClipboardContent) {
+            newContent = imageData;
+            contentType = 'image';
+            lastClipboardContent = imageData;
+          }
+        } catch (imageError) {
+          log.error('Error converting clipboard image to data URL:', imageError);
         }
       }
-      
+
       if (newContent) {
         log.debug(`New clipboard content detected, type: ${contentType}, length: ${newContent.length}`);
         addToHistory(newContent, contentType);
-      } else if (!newContent && lastClipboardContent === null) {
-        // Always send update even when clipboard is empty to ensure UI sync
+      } else if (!currentText && currentImage.isEmpty() && lastClipboardContent !== null) {
+        // Clipboard was cleared externally - sync the state
+        log.debug('Clipboard cleared externally');
+        lastClipboardContent = null;
         if (mainWindow && mainWindow.webContents) {
           mainWindow.webContents.send('clipboard-updated', {
             history: clipboardHistory,
             currentContent: null,
+            contentType: null,
             memoryUsage: getMemoryUsage()
           });
         }
@@ -98,23 +173,53 @@ function stopClipboardMonitoring() {
 }
 
 function addToHistory(content, type) {
-  const item = {
-    id: Date.now(),
-    content: content,
-    type: type,
-    timestamp: new Date().toISOString(),
-    size: new Blob([content]).size
-  };
-  
-  clipboardHistory.unshift(item);
-  log.debug(`Added item to history, total items: ${clipboardHistory.length}`);
-  
+  // Feature 4: Deduplication - check for existing item with same content
+  const existingIndex = clipboardHistory.findIndex(item => item.content === content);
+  if (existingIndex !== -1) {
+    const existing = clipboardHistory.splice(existingIndex, 1)[0];
+    existing.timestamp = new Date().toISOString();
+    existing.id = Date.now();
+    clipboardHistory.unshift(existing);
+    log.debug('Duplicate detected, moved existing item to top');
+  } else {
+    const item = {
+      id: Date.now(),
+      content: content,
+      type: type,
+      timestamp: new Date().toISOString(),
+      size: Buffer.byteLength(content, 'utf-8'),
+      pinned: false
+    };
+    clipboardHistory.unshift(item);
+    log.debug(`Added item to history, total items: ${clipboardHistory.length}`);
+  }
+
+  // Feature 1: Enforce memory limit
+  enforceMemoryLimit();
+
   if (mainWindow && mainWindow.webContents) {
     mainWindow.webContents.send('clipboard-updated', {
       history: clipboardHistory,
       currentContent: content,
+      contentType: type,
       memoryUsage: getMemoryUsage()
     });
+  }
+}
+
+function enforceMemoryLimit() {
+  while (getMemoryUsage() > MAX_MEMORY_BYTES) {
+    // Find the oldest non-pinned item (from the end)
+    let removeIndex = -1;
+    for (let i = clipboardHistory.length - 1; i >= 0; i--) {
+      if (!clipboardHistory[i].pinned) {
+        removeIndex = i;
+        break;
+      }
+    }
+    if (removeIndex === -1) break; // All items are pinned
+    clipboardHistory.splice(removeIndex, 1);
+    log.debug('Removed oldest non-pinned item to enforce memory limit');
   }
 }
 
@@ -165,7 +270,7 @@ ipcMain.handle('clear-history', () => {
   log.debug('IPC: clear-history called');
   clipboardHistory = [];
   lastClipboardContent = null;
-  clipboard.clear(); // 清空系统剪贴板
+  clipboard.clear();
   return { success: true, memoryUsage: 0 };
 });
 
@@ -174,8 +279,8 @@ ipcMain.handle('delete-history-item', (event, itemId) => {
   const initialLength = clipboardHistory.length;
   clipboardHistory = clipboardHistory.filter(item => item.id !== itemId);
   const deleted = initialLength !== clipboardHistory.length;
-  return { 
-    success: deleted, 
+  return {
+    success: deleted,
     history: clipboardHistory,
     memoryUsage: getMemoryUsage()
   };
@@ -194,6 +299,29 @@ ipcMain.handle('get-window-position', () => {
 ipcMain.handle('move-window', (event, x, y) => {
   if (!mainWindow) return;
   mainWindow.setPosition(Math.round(x), Math.round(y));
+});
+
+// Feature 2: Hide window IPC
+ipcMain.handle('hide-window', () => {
+  if (mainWindow && mainWindow.isVisible()) {
+    mainWindow.hide();
+  }
+  return { success: true };
+});
+
+// Feature 3: Toggle pin item IPC
+ipcMain.handle('toggle-pin-item', (event, itemId) => {
+  log.debug(`IPC: toggle-pin-item called, id: ${itemId}`);
+  const item = clipboardHistory.find(i => i.id === itemId);
+  if (item) {
+    item.pinned = !item.pinned;
+    return {
+      success: true,
+      history: clipboardHistory,
+      memoryUsage: getMemoryUsage()
+    };
+  }
+  return { success: false };
 });
 
 // Toggle window visibility function
@@ -226,7 +354,7 @@ function registerGlobalHotkey() {
     log.info(`Global hotkey ${hotkey} pressed`);
     toggleWindow();
   });
-  
+
   if (success) {
     log.info(`Global hotkey ${hotkey} registered successfully`);
   } else {
@@ -241,7 +369,7 @@ function showWindow() {
     createWindow();
     return;
   }
-  
+
   if (!mainWindow.isVisible()) {
     log.info('Showing window via dock/app icon');
     mainWindow.show();
@@ -273,6 +401,8 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   log.info('App is quitting...');
+  app.isQuitting = true;
+  saveWindowBounds();
   stopClipboardMonitoring();
   globalShortcut.unregisterAll();
   log.info('Global shortcuts unregistered');

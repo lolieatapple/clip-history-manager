@@ -456,6 +456,75 @@ section {
     color: white;
 }
 
+/* Pin button */
+.action-btn.pin {
+    background: rgba(102, 126, 234, 0.1);
+    color: #a0aec0;
+}
+
+.action-btn.pin:hover {
+    background: rgba(102, 126, 234, 0.2);
+    color: #667eea;
+}
+
+.action-btn.pin.active {
+    background: rgba(102, 126, 234, 0.15);
+    color: #667eea;
+}
+
+/* Pinned items */
+.history-item.pinned {
+    border-left: 3px solid #667eea;
+    background: rgba(102, 126, 234, 0.03);
+}
+
+.history-item.pinned .item-actions {
+    opacity: 1;
+}
+
+.history-item.pinned .action-btn.pin {
+    opacity: 1;
+}
+
+/* Selected item (keyboard navigation) */
+.history-item.selected {
+    background: #edf2f7;
+    box-shadow: inset 0 0 0 2px #667eea;
+}
+
+/* Filter buttons */
+.filter-buttons {
+    display: flex;
+    gap: 4px;
+    background: #f7fafc;
+    border-radius: 8px;
+    padding: 4px;
+    margin: 0 12px;
+}
+
+.filter-btn {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    background: transparent;
+    color: #718096;
+    transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+    color: #2d3748;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.filter-btn.active {
+    background: #667eea;
+    color: white;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
 /* Empty States */
 .empty-state {
     text-align: center;
