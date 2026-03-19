@@ -304,7 +304,11 @@ ipcMain.handle('move-window', (event, x, y) => {
 // Feature 2: Hide window IPC
 ipcMain.handle('hide-window', () => {
   if (mainWindow && mainWindow.isVisible()) {
-    mainWindow.hide();
+    if (process.platform === 'darwin') {
+      app.hide(); // macOS: hides app and restores focus to previous window
+    } else {
+      mainWindow.hide();
+    }
   }
   return { success: true };
 });
@@ -334,7 +338,11 @@ function toggleWindow() {
 
   if (mainWindow.isVisible() && mainWindow.isFocused()) {
     log.info('Window is already focused, hiding window via hotkey');
-    mainWindow.hide();
+    if (process.platform === 'darwin') {
+      app.hide();
+    } else {
+      mainWindow.hide();
+    }
   } else if (mainWindow.isVisible()) {
     log.info('Window is visible but not focused, setting window always on top via hotkey');
     mainWindow.setAlwaysOnTop(true);
