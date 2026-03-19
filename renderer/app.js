@@ -295,10 +295,11 @@ async function handleHistoryItemClick(itemId) {
     try {
         const result = await window.electronAPI.copyToClipboard(item.content, item.type);
         if (result.success) {
-            showToast('Copied to clipboard!', 'success');
+            showToast('Copied to clipboard!', 'success', 1500);
             currentContent = item.content;
             currentContentType = item.type;
             renderCurrentContent();
+            await window.electronAPI.hideWindow();
         } else {
             showToast('Failed to copy to clipboard', 'error');
         }
