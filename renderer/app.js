@@ -255,7 +255,7 @@ async function selectAndCopy(index) {
             currentContent = item.content;
             currentContentType = item.type;
             renderCurrentContent();
-            await window.electronAPI.hideWindow();
+            await window.electronAPI.hideWindow(true);
         }
     } catch (error) {
         console.error('Error copying to clipboard:', error);
@@ -299,7 +299,7 @@ async function handleHistoryItemClick(itemId) {
             currentContent = item.content;
             currentContentType = item.type;
             renderCurrentContent();
-            await window.electronAPI.hideWindow();
+            await window.electronAPI.hideWindow(true);
         } else {
             showToast('Failed to copy to clipboard', 'error');
         }

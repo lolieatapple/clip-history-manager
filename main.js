@@ -302,12 +302,30 @@ ipcMain.handle('move-window', (event, x, y) => {
 });
 
 // Feature 2: Hide window IPC
-ipcMain.handle('hide-window', () => {
+ipcMain.handle('hide-window', (event, shouldPaste = false) => {
   if (mainWindow && mainWindow.isVisible()) {
     if (process.platform === 'darwin') {
       app.hide(); // macOS: hides app and restores focus to previous window
+      if (shouldPaste) {
+        // Wait for focus to return to the previous app, then simulate Cmd+V
+        setTimeout(() => {
+          const { exec } = require('child_process');
+          exec(`osascript -e 'tell application "System Events" to keystroke "v" using command down'`, (err) => {
+            if (err) log.error('Auto-paste failed:', err.message);
+          });
+        }, 150);
+      }
     } else {
       mainWindow.hide();
+      if (shouldPaste) {
+        // Linux/Windows: use xdotool or similar
+        setTimeout(() => {
+          const { exec } = require('child_process');
+          exec(`xdotool key ctrl+v`, (err) => {
+            if (err) log.error('Auto-paste failed:', err.message);
+          });
+        }, 150);
+      }
     }
   }
   return { success: true };
