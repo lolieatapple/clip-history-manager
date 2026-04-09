@@ -33,14 +33,11 @@
     "mac": {
       "category": "public.app-category.productivity",
       "artifactName": "Clipboard-History-Manager-${version}-${arch}.${ext}",
-      "identity": "Lin Mo (9V2W2U87ZG)",
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
-      "notarize": {
-        "teamId": "9V2W2U87ZG"
-      }
+      "notarize": true
     },
     "win": {
       "target": "nsis"
