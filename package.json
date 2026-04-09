@@ -1,6 +1,6 @@
 {
   "name": "clipboard-history-manager",
-  "version": "1.0.0",
+  "version": "1.4.0",
   "description": "A beautiful and secure clipboard history manager built with Electron",
   "main": "main.js",
   "scripts": {
@@ -31,7 +31,16 @@
       "node_modules/**/*"
     ],
     "mac": {
-      "category": "public.app-category.productivity"
+      "category": "public.app-category.productivity",
+      "artifactName": "Clipboard-History-Manager-${version}-${arch}.${ext}",
+      "identity": "Developer ID Application: Lin Mo (9V2W2U87ZG)",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "notarize": {
+        "teamId": "9V2W2U87ZG"
+      }
     },
     "win": {
       "target": "nsis"

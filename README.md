@@ -1,17 +1,32 @@
 # Clipboard History Manager
 
+[中文说明](README_CN.md)
+
 A beautiful, secure, and privacy-focused clipboard history manager built with Electron.
+
+## Screenshot
+
+![Clipboard History Manager](clipboardHistory.png)
+
+## Download
+
+Download the latest release from the [Releases page](../../releases):
+
+- **Apple Silicon (M1/M2/M3/M4)**: `Clipboard-History-Manager-*-arm64.dmg`
+- **Intel Mac**: `Clipboard-History-Manager-*-x64.dmg`
 
 ## Features
 
-- 🔒 **Complete Privacy**: Runs entirely offline, no data sent to servers
-- 🎨 **Beautiful UI**: Modern, intuitive interface with gradient backgrounds
-- 📋 **Text & Image Support**: Handles both text and image clipboard content
-- 🔍 **Smart Search**: Search through clipboard history with instant filtering
-- 💾 **Memory Management**: Real-time memory usage display and automatic cleanup
-- 🗑️ **Easy Management**: Single-click copy, delete individual items, or clear all
-- 📊 **Memory Monitoring**: Shows current memory usage of clipboard history
-- ⌨️ **Keyboard Shortcuts**: Ctrl/Cmd+F for search, Ctrl/Cmd+R for refresh
+- **Complete Privacy**: Runs entirely offline, no data sent to servers
+- **Text & Image Support**: Handles both text and image clipboard content
+- **Smart Search**: Search through clipboard history with instant filtering
+- **Global Hotkey**: `Cmd+Shift+V` to quickly toggle the clipboard history window
+- **Auto Paste**: Selecting an item automatically pastes it into the active input field
+- **Always on Top**: Toggle always-on-top mode via hotkey when the window is visible
+- **Window Dragging**: Drag the window to any position, with position persistence across sessions
+- **Numbered History**: Items displayed with numbered index badges for quick reference
+- **Memory Management**: Real-time memory usage display and automatic cleanup (500MB limit)
+- **Keyboard Shortcuts**: `Cmd+F` for search, `Cmd+R` for refresh, `Escape` to close
 
 ## Quick Start
 
@@ -33,17 +48,17 @@ A beautiful, secure, and privacy-focused clipboard history manager built with El
 ## Usage
 
 ### Basic Operations
-- **View Current Clipboard**: Top section shows current clipboard content
-- **Browse History**: Scroll through all clipboard items below
-- **Copy from History**: Click the copy button on any item to copy it
-- **Search**: Use the search box to find specific text content
-- **Clear Current**: Use the "Clear" button to empty current clipboard
-- **Clear All**: Use "Clear All" to remove entire history
+- **Global Hotkey**: Press `Cmd+Shift+V` to toggle the clipboard history window
+- **Select & Paste**: Click any history item to copy it and automatically paste into the active input
+- **Browse History**: Scroll through all clipboard items with numbered badges
+- **Search**: Use the search box to filter by text content
 - **Delete Item**: Click the trash icon on individual items
+- **Clear All**: Use "Clear All" to remove entire history
 
 ### Keyboard Shortcuts
-- `Ctrl/Cmd + F`: Focus search box
-- `Ctrl/Cmd + R`: Refresh clipboard history
+- `Cmd + Shift + V`: Toggle clipboard history window
+- `Cmd + F`: Focus search box
+- `Cmd + R`: Refresh clipboard history
 - `Escape`: Clear search or close modals
 
 ### Privacy Features
@@ -68,8 +83,8 @@ A beautiful, secure, and privacy-focused clipboard history manager built with El
 └── renderer/
     ├── index.html       # Main UI
     ├── styles.css       # Styling
-    ├── app.js          # Frontend logic
-    └── preload.js      # Secure IPC bridge
+    ├── app.js           # Frontend logic
+    └── preload.js       # Secure IPC bridge
 ```
 
 ### Logging
@@ -93,21 +108,6 @@ npm run pack     # Creates unpacked directory
 - No network connections are made
 - Content is never included in logs (only metadata like size and type)
 - Secure IPC communication between main and renderer processes
-
-## Troubleshooting
-
-### Common Issues
-
-1. **App won't start**: Ensure Node.js 16+ is installed
-2. **No clipboard detection**: Check if clipboard permissions are granted
-3. **High memory usage**: Use "Clear All" to free memory, or restart the app
-4. **Search not working**: Ensure you're searching text content, images can't be searched
-
-### Debug Mode
-Run with development logging:
-```bash
-npm run dev
-```
 
 ## License
 
