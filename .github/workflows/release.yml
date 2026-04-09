@@ -57,6 +57,16 @@ jobs:
           echo "=== Codesigning identities ==="
           security find-identity -v -p codesigning "$KEYCHAIN_PATH"
 
+      - name: Set notarize teamId from env
+        run: |
+          node -e "
+            const pkg = require('./package.json');
+            pkg.build.mac.notarize = { teamId: process.env.APPLE_TEAM_ID };
+            require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
       - name: Build for macOS (${{ matrix.arch }})
         env:
           CSC_KEYCHAIN: ${{ runner.temp }}/build.keychain-db
