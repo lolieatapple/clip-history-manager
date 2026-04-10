@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, clipboard, nativeImage, globalShortcut, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, clipboard, nativeImage, globalShortcut, screen, systemPreferences } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const log = require('electron-log');
@@ -307,13 +307,19 @@ ipcMain.handle('hide-window', (event, shouldPaste = false) => {
     if (process.platform === 'darwin') {
       app.hide(); // macOS: hides app and restores focus to previous window
       if (shouldPaste) {
-        // Wait for focus to return to the previous app, then simulate Cmd+V
-        setTimeout(() => {
-          const { exec } = require('child_process');
-          exec(`osascript -e 'tell application "System Events" to keystroke "v" using command down'`, (err) => {
-            if (err) log.error('Auto-paste failed:', err.message);
-          });
-        }, 150);
+        // Check accessibility permission (passing true prompts the user if not granted)
+        const trusted = systemPreferences.isTrustedAccessibilityClient(true);
+        if (!trusted) {
+          log.warn('Auto-paste requires Accessibility permission. A system prompt should appear.');
+        } else {
+          // Wait for focus to return to the previous app, then simulate Cmd+V
+          setTimeout(() => {
+            const { exec } = require('child_process');
+            exec(`osascript -e 'tell application "System Events" to keystroke "v" using command down'`, (err) => {
+              if (err) log.error('Auto-paste failed:', err.message);
+            });
+          }, 150);
+        }
       }
     } else {
       mainWindow.hide();
